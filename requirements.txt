@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy>=1.4
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+alembic       # optional (if you want migrations later)
+python-multipart  # for OAuth2 form parsing
