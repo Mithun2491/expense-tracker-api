@@ -1,8 +1,11 @@
 from sqlalchemy.orm import Session
 from app.models.category import Category
 
-def create_category(db: Session, name: str):
-    cat = Category(name=name)
+def create_category(db: Session, name: str, user_id: int):
+    """
+    Create a new category for a specific user.
+    """
+    cat = Category(name=name, user_id=user_id)
     db.add(cat)
     db.commit()
     db.refresh(cat)

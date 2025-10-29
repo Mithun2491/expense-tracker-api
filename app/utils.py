@@ -1,44 +1,45 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-from typing import Optional
+from typing import Optional, Union
 from app.core.config import settings
 
-# ✅ Password hashing setup
+# ✅ Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
     """
-    Hash password using bcrypt. Trims to 72 characters due to bcrypt limitation.
+    Hash password using bcrypt with security best practices.
     """
-    password = password[:72]  # Prevent bcrypt errors if password is too long
+    password = password[:72]  # bcrypt limit
     return pwd_context.hash(password)
 
-def verify_password(plain: str, hashed: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Verify hashed password against plain password.
+    Verify a plain password against its hashed version.
     """
-    plain = plain[:72]  # Ensure same bcrypt limit
-    return pwd_context.verify(plain, hashed)
+    plain_password = plain_password[:72]  # ensure compatibility
+    return pwd_context.verify(plain_password, hashed_password)
 
-def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(subject: Union[str, int], expires_delta: Optional[timedelta] = None) -> str:
     """
-    Create JWT token with expiration.
+    Generate a JWT access token.
+    `subject` is usually the user ID or username.
     """
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     payload = {
-        "exp": expire,
-        "sub": str(subject)
+        "sub": str(subject),
+        "exp": expire
     }
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return token
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-def decode_token(token: str):
+def decode_token(token: str) -> Optional[dict]:
     """
-    Decode JWT token safely with error handling.
+    Decode and validate a JWT token.
+    Returns payload if valid, None if expired/invalid.
     """
     try:
-        decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return decoded_data
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return payload
     except JWTError:
-        return None  # Token invalid or expired
+        return None

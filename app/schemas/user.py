@@ -1,12 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
+# ✅ Schema for user registration
 class UserCreate(BaseModel):
-    username: str
+    email: EmailStr
     password: str
+    full_name: Optional[str] = None
 
+# ✅ Schema for reading user data (returned to client)
 class UserRead(BaseModel):
     id: int
-    username: str
+    email: EmailStr
+    full_name: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        orm_mode = True  # ✅ Allows returning ORM models directly
